@@ -1,0 +1,66 @@
+GHO-USDC 
+paths.tokenIn	address	0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee
+paths.steps	tuple	0x88b1Cd4b430D95b406E382C3cDBaE54697a0286E,0x88b1Cd4b430D95b406E382C3cDBaE54697a0286E,true,0x9Ab907FB3e098103ca048Ad26E501Bf7B3dfA3EB,0x729F75Aff28c726e32403e80cef2aFb518CFbfa7,false,0x729F75Aff28c726e32403e80cef2aFb518CFbfa7,0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42,true,0x608382D1627c1F2F939c87d14Fdb62D5bCBF561F,0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913,false
+
+USDC-GHO
+paths.tokenIn	address	0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+paths.steps	tuple	0xE0fC89d4971794128255F35739428a64A839C5cB,0x4200000000000000000000000000000000000006,false,0xe298b938631f750DD409fB18227C4a23dCdaab9b,0xe298b938631f750DD409fB18227C4a23dCdaab9b,true,0x4Fbb7870DBE7A7Ef4866A33c0eED73D395730dc0,0xC768c589647798a6EE01A91FdE98EF2ed046DBD6,false,0x7AB124EC4029316c2A42F713828ddf2a192B36db,0x88b1Cd4b430D95b406E382C3cDBaE54697a0286E,false,0x88b1Cd4b430D95b406E382C3cDBaE54697a0286E,0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee,true
+
+BAL-USDC
+0	pool	address
+0x812C1217EA39c5242eD1C6D1015EbeD31261E28A
+1	tokenIn	address
+0x4158734D47Fc9692176B5085E0F52ee0Da5d47F1
+2	tokenOut	address
+0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+
+for liquidity provision in pool ratio 
+ 1 GHO  to ~0.5 usdc
+
+
+ function _swap(
+        uint256 amount,
+        uint256 amountOutMin,
+        IRouter.Route[] memory _route
+    ) internal returns (uint256) {
+        uint[] memory amounts = IRouter(ROUTER).swapExactTokensForTokens(
+            amount,
+            amountOutMin,
+            _route,
+            address(this),
+            block.timestamp
+        );
+        return amounts[amounts.length - 1];
+    }
+
+it("should harvest reward",async () => {
+      advanceBlockTo(1000);
+      //AXL=>USDT=>BNB=>CAKE 
+      let path = encodePath(["0x8b1f4432F943c465A973FeDC6d7aa50Fc96f1f65","0x55d398326f99059fF775485246999027B3197955","0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82"],[FeeAmount.MEDIUM, FeeAmount.LOW,FeeAmount.LOW]);
+      await vault.harvest(path,1);
+    })    
+
+
+const FEE_SIZE = 3
+export enum FeeAmount {
+  LOW = 500,
+  MEDIUM = 2500,
+  HIGH = 10000,
+}
+function encodePath(path: string[], fees: FeeAmount[]): string {
+  if (path.length != fees.length + 1) {
+    throw new Error('path/fee lengths do not match')
+  }
+
+  let encoded = '0x'
+  for (let i = 0; i < fees.length; i++) {
+    // 20 byte encoding of the address
+    encoded += path[i].slice(2)
+    // 3 byte encoding of the fee
+    encoded += fees[i].toString(16).padStart(2 * FEE_SIZE, '0')
+  }
+  // encode the final token
+  encoded += path[path.length - 1].slice(2)
+
+  return encoded.toLowerCase()
+}    
